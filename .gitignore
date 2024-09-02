@@ -1,12 +1,4 @@
-# Conan stuff
-conan.lock
-conanbuildinfo.txt
-conaninfo.txt
-conanbuildinfo.cmake
-graph_info.json
-
-# Builds
-cmake-build-*/
-
-# IDE
-.idea/
+.idea
+cmake-build-debug
+build
+CMakeUserPresets.json

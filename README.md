@@ -5,55 +5,34 @@ Example project to use Conan as C++ dependencies manager.
 ## Docs
 
 * Conan's resources: https://conan.io/
-* Install on CLion: https://blog.jetbrains.com/clion/2019/05/getting-started-with-the-conan-clion-plugin/
-
-## Basic setup on Windows and CLion
 
 ### Install Conan binary
 
 Install CLion by downloading the binary installation: https://conan.io/downloads.html
 
-Or use the pip command: 
-
-```bash
-pip install conan
-```
-
 ### Generate Conan profiles
 
-Conan profiles needs to be generated and placed in the directory `~/.conan/profiles/`. They could be generated with the following command:
+Conan profiles needs to be generated and placed in the directory `~/.conan2/profiles/`. They could be generated with the
+following command:
 
 ```bash
-conan profile new --detect default
+conan profile detect
 ```
 
-Do not forget to tweak the values "arch", "arch_build" and "build_type".
+Do not forget to tweak the values "arch" and "build_type".
 
 Example file:
 
 ```text
 [settings]
-os=Windows
-os_build=Windows
-arch=x86
-arch_build=x86
-compiler=Visual Studio
-compiler.version=16
+arch=armv8
 build_type=Release
-[options]
-[build_requires]
-[env]
+compiler=apple-clang
+compiler.cppstd=20
+compiler.libcxx=libc++
+compiler.version=15
+os=Macos
 ```
-
-### Install the plugin in CLion
-
-![docs/plugin.png](docs/plugin.png)
-
-### Link profiles with builds
-
-It is needed to link the profiles files with the CMake profiles in the plugin configuration:
-
-![docs/profileconfig.png](docs/profileconfig.png)
 
 ### Create conanfile.txt
 
@@ -63,11 +42,15 @@ For example:
 
 ```text
 [requires]
-spdlog/1.9.2
-sfml/2.5.1
+spdlog/1.14.1
+sfml/2.6.1
 
 [generators]
-cmake
+CMakeDeps
+CMakeToolchain
+
+[layout]
+cmake_layout
 ```
 
 ### Configure cmake
@@ -76,23 +59,72 @@ Add the required elements to obtain a `CMakeLists.txt` file like below:
 
 ```cmake
 cmake_minimum_required(VERSION 3.20)
-project(ConanTemplate)
 
-include(${CMAKE_BINARY_DIR}/conanbuildinfo.cmake)
-conan_basic_setup()
+project(ConanTemplate)
 
 set(CMAKE_CXX_STANDARD 20)
 
-add_executable(ConanTemplate main.cpp)
-target_link_libraries(ConanTemplate ${CONAN_LIBS})
+add_executable(${PROJECT_NAME} src/main.cpp)
+target_link_libraries(${PROJECT_NAME} spdlog::spdlog)
 ```
 
-### Build parameters
+```shell
+$ conan --version
+Conan version 2.7.0
 
-If the precompiled packages are not present in the Conan repos, add the `--build missing` parameter in the Conan's plugin config:
+$ conan profile show
+Host profile:
+[settings]
+arch=armv8
+build_type=Release
+compiler=apple-clang
+compiler.cppstd=20
+compiler.libcxx=libc++
+compiler.version=15
+os=Macos
 
-![docs/config.png](docs/config.png)
+Build profile:
+[settings]
+arch=armv8
+build_type=Release
+compiler=apple-clang
+compiler.cppstd=20
+compiler.libcxx=libc++
+compiler.version=15
+os=Macos
+```
 
-## Run
+```shell
+$ cmake --version
+cmake version 3.30.0
 
-Just reload the CMake project. If the profiles files, the conanfile.txt file and the architectures are all good everything should work.
+CMake suite maintained and supported by Kitware (kitware.com/cmake).
+```
+
+```shell
+$ gcc --version
+Apple clang version 15.0.0 (clang-1500.3.9.4)
+Target: arm64-apple-darwin23.5.0
+Thread model: posix
+InstalledDir: /Applications/Xcode.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/bin
+```
+
+```shell
+$ g++ --version
+Apple clang version 15.0.0 (clang-1500.3.9.4)
+Target: arm64-apple-darwin23.5.0
+Thread model: posix
+InstalledDir: /Applications/Xcode.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/bin
+```
+
+编译
+
+```shell
+$ ./build.sh
+```
+
+运行
+
+```shell
+$ ./run.sh
+```
